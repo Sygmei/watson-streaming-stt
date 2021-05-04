@@ -40,16 +40,6 @@ RECORD_SECONDS = 5
 FINALS = []
 LAST = None
 
-REGION_MAP = {
-    'us-east': 'gateway-wdc.watsonplatform.net',
-    'us-south': 'stream.watsonplatform.net',
-    'eu-gb': 'stream.watsonplatform.net',
-    'eu-de': 'stream-fra.watsonplatform.net',
-    'au-syd': 'gateway-syd.watsonplatform.net',
-    'jp-tok': 'gateway-syd.watsonplatform.net',
-}
-
-
 def read_audio(ws, timeout):
     """Read audio and sent it to the websocket port.
 
@@ -170,9 +160,14 @@ def get_url():
     # https://console.bluemix.net/docs/services/speech-to-text/websockets.html#websockets
     # for details on which endpoints are for each region.
     region = config.get('auth', 'region')
-    host = REGION_MAP[region]
-    return ("wss://{}/speech-to-text/api/v1/recognize"
-           "?model=en-US_BroadbandModel").format(host)
+    instance_id = config.get('auth', 'instance_id')
+    return (
+        "wss://"
+        "api.{location}.speech-to-text.watson.cloud.ibm.com"
+        "/instances/{instance_id}"
+        "/v1/recognize"
+        "?model=fr-FR_BroadbandModel"
+    ).format(location=region, instance_id=instance_id)
 
 def get_auth():
     config = configparser.RawConfigParser()
@@ -180,11 +175,10 @@ def get_auth():
     apikey = config.get('auth', 'apikey')
     return ("apikey", apikey)
 
-
 def parse_args():
     parser = argparse.ArgumentParser(
         description='Transcribe Watson text in real time')
-    parser.add_argument('-t', '--timeout', type=int, default=5)
+    parser.add_argument('-t', '--timeout', type=int, default=20)
     # parser.add_argument('-d', '--device')
     # parser.add_argument('-v', '--verbose', action='store_true')
     args = parser.parse_args()
